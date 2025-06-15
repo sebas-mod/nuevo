@@ -38,7 +38,7 @@ global.rcanal = {
     showAdAttribution: true, 
     title: "Waguri Ai ✧", 
     body: wm, 
-    mediaUrl: "https://pomf2.lain.la/f/ut2z21cs.jpg", 
+    mediaUrl: "https://files.catbox.moe/t0s63z.jpg", 
     description: null, 
     previewType: "PHOTO", 
     thumbnailUrl: "https://pomf2.lain.la/f/ut2z21cs.jpg", 

@@ -3,9 +3,7 @@ import FormData from 'form-data';
 import yts from 'yt-search';
 
 let handler = async (m, { conn, args, text }) => {
-  if (!args[0]) throw m.reply(`✧ Ejemplo: ${usedPrefix}${command} Joji - Ew`);
-  
-await conn.sendMessage(m.chat, { react: { text: '🕒', key: m.key }})
+  if (!args[0]) throw m.reply('Proporcione una consulta');
   
    let results = await yts(text);
    let tes = results.videos[0]
@@ -15,34 +13,20 @@ if (mp3Result.success) {
   console.log("Title:", mp3Result.data.title);
   console.log("Download URL:", mp3Result.data.downloadUrl);
 
-const caption = `
-      *💮 PLAY AUDIO 💮*
- 
-  ✧ : \`titulo;\` ${tes.title || 'no encontrado'}
-  ✧ : \`artista;\` ${tes.author.name || 'no encontrado'}
-  ✧ : \`duracion;\` ${tes.duration || 'no encontrado'}
-  ✧ : \`tipo;\` ${mp3Result.data.type || 'no encontrado'}
- 
-> ${wm}
-> Pedido de @${m.sender.split('@')[0]}
-> url: ${tes.url}`;
-
-await m.reply(caption)
 await conn.sendMessage(m.chat, {
       audio: { url: mp3Result.data.downloadUrl },
       mimetype: "audio/mp4",
       fileName: tes.title,
       mentions: [m.sender]
     }, { quoted: m });
-await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key }})
+
 } else {
   console.error("Error:", mp3Result.error);
-  await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key }})
 }
 }
-handler.help = ['play *<consulta>*'];
+handler.help = ['play3 *<consulta>*'];
 handler.tags = ['downloader'];
-handler.command = ["play","song","musica"];
+handler.command = ["play3","song3","musica3"];
 
 export default handler
 
@@ -66,7 +50,7 @@ const youtubeScraper = {
     try {
       if (!url || !url.includes('youtube.com') && !url.includes('youtu.be')) {
         return new ErrorResponse({
-          message: "¡URL de YouTube no válida!"
+          message: "URL YouTube tidak valid!"
         });
       }
 
@@ -87,12 +71,12 @@ const youtubeScraper = {
       
       if (!data || !data.link) {
         return new ErrorResponse({
-          message: "No se pudo obtener el enlace de descarga"
+          message: "Gagal mendapatkan link download"
         });
       }
       
       return new Success({
-        title: data.filename || "Título desconocido",
+        title: data.filename || "Unknown Title",
         downloadUrl: data.link,
         type: "mp3"
       });
@@ -100,7 +84,7 @@ const youtubeScraper = {
     } catch (error) {
       if (error.code === 'ECONNABORTED') {
         return new ErrorResponse({
-          message: "Tiempo de espera de la solicitud agotado, inténtelo de nuevo más tarde"
+          message: "Request timeout, coba lagi nanti"
         });
       }
       
@@ -114,7 +98,7 @@ const youtubeScraper = {
     try {
       if (!url || !url.includes('youtube.com') && !url.includes('youtu.be')) {
         return new ErrorResponse({
-          message: "¡URL de YouTube no válida!"
+          message: "URL YouTube tidak valid!"
         });
       }
 
@@ -128,7 +112,7 @@ const youtubeScraper = {
       
       if (!Object.keys(validQuality).includes(quality)) {
         return new ErrorResponse({
-          message: "¡Calidad no válida!",
+          message: "Quality tidak valid!",
           availableQuality: Object.keys(validQuality)
         });
       }
@@ -147,14 +131,14 @@ const youtubeScraper = {
       
       if (!firstRequest || !firstRequest.progress_url) {
         return new ErrorResponse({
-          message: "No se pudo iniciar el proceso de descarga"
+          message: "Gagal memulai proses download"
         });
       }
       
       const { progress_url } = firstRequest;
       let metadata = {
         image: firstRequest.info?.image || "",
-        title: firstRequest.info?.title || "Título desconocido",
+        title: firstRequest.info?.title || "Unknown Title",
         downloadUrl: "",
         quality: quality,
         type: quality === "audio" ? "mp3" : "mp4"
@@ -164,12 +148,12 @@ const youtubeScraper = {
       let attempts = 0;
       const maxAttempts = 40;
       
-      console.log("Procesando descarga, por favor espere...");
+      console.log("Memproses download, mohon tunggu...");
       
       do {
         if (attempts >= maxAttempts) {
           return new ErrorResponse({
-            message: "Timeout: El proceso de descarga tarda demasiado, inténtalo de nuevo."
+            message: "Timeout: Proses download terlalu lama, coba lagi"
           });
         }
         
@@ -185,11 +169,11 @@ const youtubeScraper = {
           datas = data;
           
           if (datas.progress && datas.progress < 100) {
-            console.log(`Progeso: ${datas.progress}%`);
+            console.log(`Progress: ${datas.progress}%`);
           }
           
         } catch (pollError) {
-          console.log(`El intento de sondeo ${attempts + 1} falló, se está reintentando...`);
+          console.log(`Polling attempt ${attempts + 1} failed, retrying...`);
         }
         
         attempts++;
@@ -197,24 +181,24 @@ const youtubeScraper = {
       
       if (!datas.download_url) {
         return new ErrorResponse({
-          message: "No se pudo obtener la URL de descarga"
+          message: "Gagal mendapatkan URL download"
         });
       }
       
       metadata.downloadUrl = datas.download_url;
-      console.log("¡Ya está listo para descargar!");
+      console.log("Download siap!");
       
       return new Success(metadata);
       
     } catch (error) {
       if (error.code === 'ECONNABORTED') {
         return new ErrorResponse({
-          message: "Tiempo de espera de la solicitud agotado, inténtelo de nuevo más tarde"
+          message: "Request timeout, coba lagi nanti"
         });
       }
       
       return new ErrorResponse({
-        message: error.response?.data?.message || error.message || "No se pudo descargar el vídeo"
+        message: error.response?.data?.message || error.message || "Gagal download video"
       });
     }
   },
@@ -233,7 +217,7 @@ const youtubeScraper = {
   }
 };
 
-// Ejemplo de uso:
+// Contoh penggunaan:
 /*
 // MP3 Download
 const mp3Result = await youtubeScraper.youtubeMp3("https://www.youtube.com/watch?v=dQw4w9WgXcQ");

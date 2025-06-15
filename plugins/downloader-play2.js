@@ -1,95 +1,59 @@
-import axios from 'axios';
-import yts from 'yt-search';
+import fetch from 'node-fetch'
+import yts from 'yt-search'
 
-let handler = async (m, { conn, text, usedPrefix, command }) => {
+let handler = async (m, { conn, command, text, usedPrefix }) => {
+  if (!text) throw m.reply(`✧ Ejemplo: ${usedPrefix}${command} Joji - Ew`);
 
-  if (!text) throw m.reply(`Ejemplo de uso: ${usedPrefix + command} Joji Ew`);
-  
+ await conn.sendMessage(m.chat, { react: { text: '🕒', key: m.key }})
+
     let results = await yts(text);
     let tes = results.videos[0]
-    
-const baseUrl = 'https://cuka.rfivecode.com';
-const cukaDownloader = {
-  youtube: async (url, exct) => {
-    const format = [ 'mp3', 'mp4' ];
-    try {
-      const response = await fetch(`${baseUrl}/download`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-          body: JSON.stringify({ url, format: exct })
-      });
 
-      const data = await response.json();
-      return data;
-      console.log('Data:' + data);
-    } catch (error) {
-      return { success: false, message: error.message };
-      console.error('Error:', error);
-    }
-  },
-  tiktok: async (url) => {
-    try {
-      const response = await fetch(`${baseUrl}/tiktok/download`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-          body: JSON.stringify({ url })
-      });
+  const args = text.split(' ');
+  const videoUrl = args[0];
+  
+  const apiUrl = `https://www.apis-anomaki.zone.id/downloader/yta?url=${encodeURIComponent(tes.url)}`;
 
-      const data = await response.json();
-      return data;
-      console.log('Data:' + data);
-    } catch (error) {
-      return { success: false, message: error.message };
-      console.error('Error:', error);
-    }
-  },
-  spotify: async (url) => {
-    try {
-      const response = await fetch(`${baseUrl}/spotify/download`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-          body: JSON.stringify({ url })
-      });
+  try {
+    const respuesta = await fetch(apiUrl);
+    const keni = await respuesta.json()
+    const { downloadURL } = keni.result.data;
 
-      const data = await response.json();
-      return data;
-      console.log('Data:' + data);
-    } catch (error) {
-      return { success: false, message: error.message };
-      console.error('Error:', error);
-    }
+    if (!downloadURL) throw m.reply('No hay respuesta de la api.');
+
+
+    const caption = `
+      *💮 PLAY AUDIO 💮*
+ 
+  ✧ : \`titulo;\` ${tes.title || 'no encontrado'}
+  ✧ : \`artista;\` ${tes.author.name || 'no encontrado'}
+  ✧ : \`duracion;\` ${tes.duration || 'no encontrado'}
+ 
+> ${wm}
+> Pedido de @${m.sender.split('@')[0]}
+> url: ${tes.url}`;
+
+await m.reply(caption)
+
+    await conn.sendMessage(m.chat, {
+      audio: { url: downloadURL },
+      mimetype: "audio/mp4",
+      fileName: tes.title,
+      mentions: [m.sender]
+    }, { quoted: m });
+await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key }})
+
+  } catch (error) {
+    console.error(`Error: ${error.message}`);
+    await conn.sendMessage(m.chat, { react: { text: '❎', key: m.key }})
   }
-}
+};
 
-let dataos = await cukaDownloader.youtube(tes.url, "mp3")
-console.log(dataos)
-let { title, thumbnail, quality, downloadUrl } = dataos
-  m.reply(`_✧ Enviando ${title} (${quality})_\n\n> ${tes.url}`)
-      const doc = {
-      audio: { url: downloadUrl },
-      mimetype: 'audio/mp4',
-      fileName: `${title}.mp3`,
-      contextInfo: {
-        externalAdReply: {
-          showAdAttribution: true,
-          mediaType: 2,
-          mediaUrl: tes.url,
-          title: title,
-          sourceUrl: tes.url,
-          thumbnail: await (await conn.getFile(thumbnail)).data
-        }
-      }
-    };
-    await conn.sendMessage(m.chat, doc, { quoted: m });
-}
 handler.help = ['play2 *<consulta>*'];
 handler.tags = ['downloader'];
-handler.command = /^(play2)$/i;
+handler.command = /^(play2|song2|musica2)$/i;
 
-export default handler;
+handler.register = true
+handler.disable = false
+
+export default handler

@@ -1,55 +1,48 @@
-import _ from "lodash"
+import axios from 'axios'
 
-let handler = async (m, { conn, command, usedPrefix, args }) => {
-  const text = _.get(args, "length") ? args.join(" ") : _.get(m, "quoted.text") || _.get(m, "quoted.caption") || _.get(m, "quoted.description") || ""
-  if (typeof text !== 'string' || !text.trim()) return m.reply(`✦ Ingresa una consulta\n*Ejemplo:* .${command} Joji Ew`)
-
-  await m.reply('✦ Espere un momento...')
-  
-let d2 = await fetch(`https://rest.cifumo.biz.id/api/downloader/spotify-search?q=${text}`)
-  let ds = await d2.json()
-const dps = await fetch(`https://rest.cifumo.biz.id/api/downloader/spotify-dl?url=${ds.data[0].url}`)
-  const dp = await dps.json()
-
-  const { title = "No encontrado", type = "No encontrado", artis = "No encontrado", durasi = "No encontrado", download, image } = dp.data
-
-  const captvid = ` *✦Título:* ${title}
- *✧Popularidad:* ${ds.data[0].popularity}
- *✦Tipo:* ${type}
- *✧Artista:* ${artis}
- *✦link:* ${text}
- `
-
-  const spthumb = (await conn.getFile(image))?.data
-
-  const infoReply = {
-    contextInfo: {
-      externalAdReply: {
-        body: `✧ En unos momentos se entrega su audio`,
-        mediaType: 1,
-        mediaUrl: text,
-        previewType: 0,
-        renderLargerThumbnail: true,
-        sourceUrl: text,
-        thumbnail: spthumb,
-        title: `S P O T I F Y - A U D I O`
-      }
-    }
+let handler = async (m, { conn, text, command }) => {
+  if (!text) {
+    return m.reply(`¡Introduce el título de la canción!\nEjemplo: .${command} Joji - Ew`)
   }
 
-  await conn.reply(m.chat, captvid, m, infoReply)
-  infoReply.contextInfo.externalAdReply.body = `Audio descargado con éxito`
-  
+  try {
+    await m.reply('🔎 Buscando la canción en Spotify...')
+
+    const search = await axios.get(`https://fastrestapis.fasturl.cloud/music/spotify?name=${encodeURIComponent(text)}`)
+    const results = search.data.result
+    if (!results || !results.length) throw m.reply('❌ Canción no encontrada.');
+
+    const result = results.find(v => v.title.toLowerCase().includes(text.toLowerCase())) || results[0]
+
+    const down = await axios.get(`https://velyn.biz.id/api/downloader/spotifydl?url=${encodeURIComponent(result.url)}`)
+    const download = down.data.data
+    if (!download?.download) throw m.reply('❌ Gagal mengunduh lagu.');
+
     await conn.sendMessage(m.chat, {
-      audio: { url: download },
-      caption: captvid,
-      mimetype: "audio/mpeg",
-      contextInfo: infoReply.contextInfo
-    }, { quoted: m })
+  audio: { url: download.download },
+  mimetype: 'audio/mpeg',
+  fileName: `${download.title} - ${download.artist}.mp3`,
+  contextInfo: {
+    externalAdReply: {
+      title: "Waguri Ai - Spotify",
+      body: ``,
+      thumbnailUrl: "https://files.catbox.moe/tffj2n.jpg",
+      mediaType: 1,
+      sourceUrl: result.url,
+      renderLargerThumbnail: true,
+      showAdAttribution: true
+    }
+  }
+}, { quoted: m })
+
+  } catch (e) {
+    console.error(e)
+    m.reply(typeof e === 'string' ? e : '❌ Se produjo un error al procesar la canción.')
+  }
 }
 
-handler.help = ["spotifyplay *<consulta>*"]
-handler.tags = ["downloader"]
-handler.command = /^(spotifyplay|splay)$/i
-handler.limit = true
+handler.help = ['splay', 'spotifyplay'].map(v => v + ' *<titulo>*')
+handler.tags = ['downloader']
+handler.command = /^s(play|potifyplay)$/i
+
 export default handler
