@@ -197,10 +197,13 @@ export async function handler(chatUpdate) {
             return
         if (typeof m.text !== 'string')
             m.text = ''
-        const isROwner = [conn.decodeJid(global.conn.user.id), ...global.owner.map(([number]) => number)].map(v => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender)
-        const isOwner = isROwner
-        const isMods = isOwner || global.mods.map(v => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender)
-        const isPrems = isROwner || db.data.users[m.sender].premiumTime > 0
+               const detectwhat = m.sender.includes('@lid') ? '@lid' : '@s.whatsapp.net';
+const isROwner = [...global.owner.map(([number]) => number)].map(v => v.replace(/[^0-9]/g, '') + detectwhat).includes(m.sender)
+const isOwner = isROwner || m.fromMe
+const isMods = isOwner || global.mods.map(v => v.replace(/[^0-9]/g, '') + detectwhat).includes(m.sender)
+//const isPrems = isROwner || global.prems.map(v => v.replace(/[^0-9]/g, '') + detectwhat).includes(m.sender)
+const isPrems = isROwner || global.db.data.users[m.sender].premiumTime > 0
+
         if (!isOwner && opts['self']) return;
         if (opts['queque'] && m.text && !(isMods || isPrems)) {
             let queque = this.msgqueque, time = 1000 * 5
@@ -219,13 +222,17 @@ export async function handler(chatUpdate) {
         let usedPrefix
         let _user = global.db.data && global.db.data.users && global.db.data.users[m.sender]
         const groupMetadata = (m.isGroup ? ((conn.chats[m.chat] || {}).metadata || await this.groupMetadata(m.chat).catch(_ => null)) : {}) || {}
-        const participants = (m.isGroup ? groupMetadata.participants : []) || []
-        const user = (m.isGroup ? participants.find(u => conn.decodeJid(u.id) === m.sender) : {}) || {} // User Data
-        const bot = (m.isGroup ? participants.find(u => conn.decodeJid(u.id) == this.user.jid) : {}) || {} // Your Data
-        const isRAdmin = user?.admin == 'superadmin' || false
-        const isAdmin = isRAdmin || user?.admin == 'admin' || false // Is User Admin?
-        const isBotAdmin = bot?.admin || false // Are you Admin?
-
+const participants = (m.isGroup ? groupMetadata.participants : []) || []
+let numBot = conn.user.lid.replace(/:.*/, '') || false
+const detectwhat2 = m.sender.includes('@lid') ? `${numBot}@lid` : conn.user.jid
+const user = (m.isGroup ? participants.find(u => conn.decodeJid(u.id) === m.sender) : {}) || {}
+const bot = (m.isGroup ? participants.find(u => conn.decodeJid(u.id) == detectwhat2) : {}) || {}
+const isRAdmin = user?.admin == 'superadmin' || false
+const isAdmin = isRAdmin || user?.admin == 'admin' || false //user admins? 
+const isBotAdmin = bot?.admin || false //Detecta sin el bot es admin
+m.isWABusiness = global.conn.authState?.creds?.platform === 'smba' || global.conn.authState?.creds?.platform === 'smbi'
+m.isChannel = m.chat.includes('@newsletter') || m.sender.includes('@newsletter')
+	
         const ___dirname = path.join(path.dirname(fileURLToPath(import.meta.url)), './plugins')
         for (let name in global.plugins) {
             let plugin = global.plugins[name]

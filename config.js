@@ -26,11 +26,11 @@ let hora = moment.tz('America/Buenos_Aires').format('HH')
 const readMore = more.repeat(4001)
 
 /*============= INFO PRINCIPAL =============*/
-global.owner = [['5493865860048', 'KenisawaDev', true]]
+global.owner = [['5493865536185', 'KenisawaDev', true]]
 global.mods = []
 global.prems = []
-global.nomorbot = '5493865860045'
-global.nomorown = '5493865860048'
+global.nomorbot = '5493865208712'
+global.nomorown = '5493865536185'
 
 /*============= MARCA DE AGUA =============*/
 global.readMore = readMore
@@ -98,7 +98,7 @@ global.dxlsx = 'application/vnd.openxmlformats-officedocument.spreadsheetml.shee
 global.dpdf = 'application/pdf'
 global.drtf = 'text/rtf'
 
-global.linkfotomenu = 'https://pomf2.lain.la/f/molwxb7d.jpg'
+global.linkfotomenu = 'https://files.catbox.moe/t0s63z.jpg'
 
 global.flaaa2 = [
  "https://flamingtext.com/net-fu/proxy_form.cgi?&imageoutput=true&script=water-logo&script=water-logo&fontsize=90&doScale=true&scaleWidth=800&scaleHeight=500&fontsize=100&fillTextColor=%23000&shadowGlowColor=%23000&backgroundColor=%23000&text=",
