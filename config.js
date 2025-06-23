@@ -26,11 +26,11 @@ let hora = moment.tz('America/Buenos_Aires').format('HH')
 const readMore = more.repeat(4001)
 
 /*============= INFO PRINCIPAL =============*/
-global.owner = [['5493865536185', 'KenisawaDev', true]]
+global.owner = [['5491166887146', 'sebas', true]]
 global.mods = []
 global.prems = []
-global.nomorbot = '5493865208712'
-global.nomorown = '5493865536185'
+global.nomorbot = '50664375980'
+global.nomorown = '5491166887146'
 
 /*============= MARCA DE AGUA =============*/
 global.readMore = readMore
